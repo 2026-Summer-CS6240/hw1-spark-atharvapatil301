@@ -12,7 +12,7 @@ local.master=local[4]
 local.input=input
 local.output=output
 # Pseudo-Cluster Execution
-hdfs.user.name=joe
+hdfs.user.name=root
 hdfs.input=input
 hdfs.output=output
 # AWS EMR Execution
@@ -42,23 +42,30 @@ local: jar clean-local-output
 
 # Start HDFS
 start-hdfs:
-	${hadoop.root}/sbin/start-dfs.sh
+	${hadoop.root}/bin/hdfs --daemon start namenode
+	${hadoop.root}/bin/hdfs --daemon start datanode
+	${hadoop.root}/bin/hdfs --daemon start secondarynamenode
 
 # Stop HDFS
-stop-hdfs: 
-	${hadoop.root}/sbin/stop-dfs.sh
-	
+stop-hdfs:
+	-${hadoop.root}/bin/hdfs --daemon stop secondarynamenode
+	-${hadoop.root}/bin/hdfs --daemon stop datanode
+	-${hadoop.root}/bin/hdfs --daemon stop namenode
+
 # Start YARN
 start-yarn: stop-yarn
-	${hadoop.root}/sbin/start-yarn.sh
+	${hadoop.root}/bin/yarn --daemon start resourcemanager
+	${hadoop.root}/bin/yarn --daemon start nodemanager
 
 # Stop YARN
 stop-yarn:
-	${hadoop.root}/sbin/stop-yarn.sh
+	-${hadoop.root}/bin/yarn --daemon stop nodemanager
+	-${hadoop.root}/bin/yarn --daemon stop resourcemanager
 
 # Reformats & initializes HDFS.
 format-hdfs: stop-hdfs
 	rm -rf /tmp/hadoop*
+	rm -rf /var/lib/hdfs/nn /var/lib/hdfs/dn
 	${hadoop.root}/bin/hdfs namenode -format
 
 # Initializes user & input directories of HDFS.	

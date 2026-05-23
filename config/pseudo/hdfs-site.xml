@@ -23,4 +23,16 @@
         <value>1</value>
     </property>
 
+    <!-- Docker overlayfs returns total=0 for Java File.getTotalSpace on
+         /tmp/hadoop-root/dfs/data, so the DN reports zero capacity and the
+         NN excludes it. Pinning storage under /var/lib/hdfs avoids that. -->
+    <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>file:///var/lib/hdfs/nn</value>
+    </property>
+    <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>file:///var/lib/hdfs/dn</value>
+    </property>
+
 </configuration>
